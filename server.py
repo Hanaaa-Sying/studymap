@@ -37,7 +37,11 @@ async def generate(course: str = Form(...), pdf: UploadFile = File(...)):
         text = extract_text_from_pdf(tmp_path)
         if not text.strip():
             raise HTTPException(status_code=422, detail="PDF 内容为空或无法解析")
-
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF 解析失败：{e}")
+    try:
         course_dir = DATA_DIR / course.replace(" ", "_")
         course_dir.mkdir(parents=True, exist_ok=True)
         (course_dir / "source.txt").write_text(text, encoding="utf-8")
@@ -67,5 +71,9 @@ async def generate(course: str = Form(...), pdf: UploadFile = File(...)):
             filename=f"{course}_幕布框架.md",
             media_type="text/markdown; charset=utf-8",
         )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"生成失败：{e}")
     finally:
         os.unlink(tmp_path)
