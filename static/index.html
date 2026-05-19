@@ -22,150 +22,102 @@
       border-radius: 16px;
       padding: 48px;
       width: 100%;
-      max-width: 520px;
+      max-width: 540px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     }
 
-    h1 {
-      font-size: 22px;
-      font-weight: 700;
-      color: #1d1d1f;
-      margin-bottom: 6px;
-    }
+    h1 { font-size: 22px; font-weight: 700; color: #1d1d1f; margin-bottom: 6px; }
 
     .subtitle {
-      font-size: 14px;
-      color: #6e6e73;
-      margin-bottom: 36px;
-      line-height: 1.5;
+      font-size: 14px; color: #6e6e73; margin-bottom: 36px; line-height: 1.5;
     }
 
     label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: #3a3a3c;
-      margin-bottom: 8px;
+      display: block; font-size: 13px; font-weight: 600;
+      color: #3a3a3c; margin-bottom: 8px;
     }
 
     input[type="text"] {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1.5px solid #d2d2d7;
-      border-radius: 10px;
-      font-size: 15px;
-      outline: none;
-      transition: border-color 0.2s;
-      margin-bottom: 20px;
+      width: 100%; padding: 12px 14px; border: 1.5px solid #d2d2d7;
+      border-radius: 10px; font-size: 15px; outline: none;
+      transition: border-color 0.2s; margin-bottom: 20px;
     }
-
     input[type="text"]:focus { border-color: #0071e3; }
 
+    /* Mode selector */
+    .mode-group {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 20px;
+    }
+
+    .mode-option { position: relative; }
+    .mode-option input[type="radio"] { display: none; }
+
+    .mode-label {
+      display: block; border: 1.5px solid #d2d2d7; border-radius: 10px;
+      padding: 14px 16px; cursor: pointer; transition: all 0.18s;
+    }
+
+    .mode-option input:checked + .mode-label {
+      border-color: #0071e3; background: #f0f7ff;
+    }
+
+    .mode-label .mode-title {
+      font-size: 14px; font-weight: 600; color: #1d1d1f; margin-bottom: 4px;
+    }
+
+    .mode-label .mode-desc {
+      font-size: 12px; color: #6e6e73; line-height: 1.4;
+    }
+
+    .mode-option input:checked + .mode-label .mode-title { color: #0071e3; }
+
     .upload-area {
-      border: 2px dashed #d2d2d7;
-      border-radius: 10px;
-      padding: 32px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 24px;
-      position: relative;
+      border: 2px dashed #d2d2d7; border-radius: 10px; padding: 28px;
+      text-align: center; cursor: pointer; transition: all 0.2s;
+      margin-bottom: 24px; position: relative;
     }
-
     .upload-area:hover, .upload-area.dragover {
-      border-color: #0071e3;
-      background: #f0f7ff;
+      border-color: #0071e3; background: #f0f7ff;
     }
-
     .upload-area input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
     }
-
-    .upload-icon { font-size: 32px; margin-bottom: 8px; }
-
-    .upload-text {
-      font-size: 14px;
-      color: #6e6e73;
-    }
-
+    .upload-icon { font-size: 28px; margin-bottom: 8px; }
+    .upload-text { font-size: 14px; color: #6e6e73; }
     .upload-text strong { color: #0071e3; }
-
-    .file-name {
-      font-size: 13px;
-      color: #1d1d1f;
-      margin-top: 8px;
-      font-weight: 500;
-    }
+    .file-name { font-size: 13px; color: #1d1d1f; margin-top: 6px; font-weight: 500; }
 
     button {
-      width: 100%;
-      padding: 14px;
-      background: #0071e3;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
+      width: 100%; padding: 14px; background: #0071e3; color: #fff;
+      border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
     }
-
     button:hover:not(:disabled) { background: #0077ed; }
     button:disabled { background: #a1a1a6; cursor: not-allowed; }
 
     .status {
-      margin-top: 20px;
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 14px;
-      text-align: center;
-      display: none;
+      margin-top: 18px; padding: 14px; border-radius: 10px;
+      font-size: 14px; text-align: center; display: none;
     }
-
-    .status.loading {
-      display: block;
-      background: #f0f7ff;
-      color: #0071e3;
-    }
-
-    .status.success {
-      display: block;
-      background: #f0faf0;
-      color: #1a7f37;
-    }
-
-    .status.error {
-      display: block;
-      background: #fff0f0;
-      color: #c0392b;
-    }
+    .status.loading { display: block; background: #f0f7ff; color: #0071e3; }
+    .status.success { display: block; background: #f0faf0; color: #1a7f37; }
+    .status.error   { display: block; background: #fff0f0; color: #c0392b; }
 
     .spinner {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 2px solid #0071e3;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin-right: 6px;
-      vertical-align: middle;
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid #0071e3; border-top-color: transparent;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      margin-right: 6px; vertical-align: middle;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .hint {
-      font-size: 12px;
-      color: #a1a1a6;
-      margin-top: 16px;
-      text-align: center;
-      line-height: 1.6;
+      font-size: 12px; color: #a1a1a6; margin-top: 14px;
+      text-align: center; line-height: 1.6;
     }
+    #reviewHint { display: none; }
   </style>
 </head>
 <body>
@@ -177,13 +129,29 @@
       <label for="course">课程名称</label>
       <input type="text" id="course" name="course" placeholder="例：马克思主义基本原理" required>
 
+      <label>使用模式</label>
+      <div class="mode-group">
+        <div class="mode-option">
+          <input type="radio" name="mode" id="modeFill" value="fill" checked>
+          <label class="mode-label" for="modeFill">
+            <div class="mode-title">📖 填充模式</div>
+            <div class="mode-desc">学期初建框架<br>约 30 秒，适合开学时用</div>
+          </label>
+        </div>
+        <div class="mode-option">
+          <input type="radio" name="mode" id="modeReview" value="review">
+          <label class="mode-label" for="modeReview">
+            <div class="mode-title">🎯 复习模式</div>
+            <div class="mode-desc">考前提取话术<br>约 2–5 分钟，全文分析</div>
+          </label>
+        </div>
+      </div>
+
       <label>课程 PDF</label>
       <div class="upload-area" id="uploadArea">
         <input type="file" id="pdf" name="pdf" accept=".pdf" required>
         <div class="upload-icon">📄</div>
-        <div class="upload-text">
-          <strong>点击选择</strong> 或拖拽 PDF 到此处
-        </div>
+        <div class="upload-text"><strong>点击选择</strong> 或拖拽 PDF 到此处</div>
         <div class="file-name" id="fileName"></div>
       </div>
 
@@ -191,7 +159,8 @@
     </form>
 
     <div class="status" id="status"></div>
-    <p class="hint">生成通常需要 30–60 秒<br>完成后自动下载 .md 文件，导入幕布即可</p>
+    <p class="hint" id="fillHint">填充模式：解析目录和章节标题，约 30 秒完成</p>
+    <p class="hint" id="reviewHint">复习模式：全文分块分析，约 2–5 分钟，请耐心等待</p>
   </div>
 
   <script>
@@ -200,6 +169,8 @@
     const uploadArea = document.getElementById('uploadArea');
     const btn = document.getElementById('btn');
     const status = document.getElementById('status');
+    const fillHint = document.getElementById('fillHint');
+    const reviewHint = document.getElementById('reviewHint');
 
     pdfInput.addEventListener('change', () => {
       fileName.textContent = pdfInput.files[0]?.name || '';
@@ -216,11 +187,20 @@
       }
     });
 
+    document.querySelectorAll('input[name="mode"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        const isReview = document.getElementById('modeReview').checked;
+        fillHint.style.display = isReview ? 'none' : 'block';
+        reviewHint.style.display = isReview ? 'block' : 'none';
+      });
+    });
+
     document.getElementById('form').addEventListener('submit', async e => {
       e.preventDefault();
       btn.disabled = true;
+      const isReview = document.getElementById('modeReview').checked;
       status.className = 'status loading';
-      status.innerHTML = '<span class="spinner"></span>正在生成知识框架，请稍候…';
+      status.innerHTML = `<span class="spinner"></span>${isReview ? '全文分析中，约 2–5 分钟，请耐心等待…' : '生成知识框架中，约 30 秒…'}`;
 
       try {
         const formData = new FormData(e.target);

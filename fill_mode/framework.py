@@ -1,9 +1,10 @@
 import json
 from ai.client import LLMClient
+from fill_mode.parser import extract_first_pages
 from store.schema import KnowledgeNode
 
 FRAMEWORK_PROMPT = """你是一个专业的学术课程知识结构分析师。
-以下是课程《{course_name}》的材料：
+以下是课程《{course_name}》的目录和章节概览：
 
 <material>
 {material_text}
@@ -21,10 +22,15 @@ FRAMEWORK_PROMPT = """你是一个专业的学术课程知识结构分析师。
 [{{"id": "n1", "title": "...", "parent_id": null, "level": 1}}]"""
 
 
-def generate_framework(course_name: str, material_text: str, client: LLMClient = None) -> list[KnowledgeNode]:
+def generate_framework(course_name: str, pdf_path: str = None, material_text: str = None,
+                       client: LLMClient = None) -> list[KnowledgeNode]:
     if client is None:
         client = LLMClient()
-    prompt = FRAMEWORK_PROMPT.format(course_name=course_name, material_text=material_text[:12000])
+    if material_text is None:
+        if pdf_path is None:
+            raise ValueError("pdf_path or material_text required")
+        material_text = extract_first_pages(pdf_path, n=25)
+    prompt = FRAMEWORK_PROMPT.format(course_name=course_name, material_text=material_text[:15000])
     raw = client.chat(prompt)
     raw = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
     nodes_data = json.loads(raw)
