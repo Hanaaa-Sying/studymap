@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-05-19 · v0.3 — 部署上线
+
+**新增**
+- Procfile：Railway 部署配置
+- 公开地址：https://web-production-1cf24.up.railway.app
+- 代码托管：https://github.com/Hanaaa-Sying/studymap
+
+---
+
 ## 2026-05-19 · v0.2 — Web 界面
 
 **新增**
