@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-05-19 · v0.5 — 填充/复习模式分离
+
+**新增**
+- 填充模式：只解析 PDF 前 25 页（目录/章节），约 30 秒完成
+- 复习模式：全文分块处理（每块 6000 字，50% 重叠），逐块提取话术后合并去重
+- 网页新增模式选择 UI，含时间预估提示
+
+**变更**
+- `fill_mode/parser.py` 新增 `extract_first_pages()` 和 `chunk_text()`
+- `fill_mode/framework.py` 改用页面级别控制，不再按字符截断
+- `review_mode/rhetoric.py` 新增 `extract_rhetoric_chunked()`
+- `server.py` 新增 `mode` 参数（fill / review）
+
+---
+
 ## 2026-05-19 · v0.4 — 导出序号格式
 
 **变更**
