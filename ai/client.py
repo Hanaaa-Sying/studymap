@@ -16,12 +16,14 @@ class LLMClient:
             return OpenAI(
                 api_key=os.environ["DEEPSEEK_API_KEY"],
                 base_url="https://api.deepseek.com",
+                timeout=55.0,
             )
         if self.provider == "doubao":
             from openai import OpenAI
             return OpenAI(
                 api_key=os.environ["DOUBAO_API_KEY"],
                 base_url="https://ark.cn-beijing.volces.com/api/v3",
+                timeout=55.0,
             )
         if self.provider == "claude":
             import anthropic

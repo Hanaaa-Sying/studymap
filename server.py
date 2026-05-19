@@ -25,7 +25,7 @@ async def index():
 
 
 @app.post("/generate")
-async def generate(
+def generate(
     course: str = Form(...),
     mode: str = Form(default="fill"),
     pdf: UploadFile = File(...),
