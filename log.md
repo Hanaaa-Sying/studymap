@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-05-21 · v0.6 — docx 支持 + 文件校验
+
+**新增**
+- 支持上传 Word (.docx) 文件，与 PDF 使用相同的两种模式
+- 前端加 20MB 文件大小校验，超出时给出明确提示
+- 后端同步校验文件大小（413 错误）
+
+**变更**
+- `fill_mode/parser.py` 新增 `extract_text_from_docx`、`extract_first_paras_docx`
+- `server.py` 重构文件解析逻辑，统一支持 pdf/docx
+
+---
+
 ## 2026-05-19 · v0.5 — 填充/复习模式分离
 
 **新增**
