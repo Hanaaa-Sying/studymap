@@ -149,9 +149,9 @@
 
       <label>课程 PDF</label>
       <div class="upload-area" id="uploadArea">
-        <input type="file" id="pdf" name="pdf" accept=".pdf" required>
+        <input type="file" id="pdf" name="pdf" accept=".pdf,.docx" required>
         <div class="upload-icon">📄</div>
-        <div class="upload-text"><strong>点击选择</strong> 或拖拽 PDF 到此处</div>
+        <div class="upload-text"><strong>点击选择</strong> 或拖拽文件到此处<br><small style="color:#a1a1a6">支持 PDF 和 Word (.docx)，最大 20MB</small></div>
         <div class="file-name" id="fileName"></div>
       </div>
 
@@ -197,6 +197,12 @@
 
     document.getElementById('form').addEventListener('submit', async e => {
       e.preventDefault();
+      const file = pdfInput.files[0];
+      if (file && file.size > 20 * 1024 * 1024) {
+        status.className = 'status error';
+        status.textContent = '✗ 文件超过 20MB，请压缩后重试';
+        return;
+      }
       btn.disabled = true;
       const isReview = document.getElementById('modeReview').checked;
       status.className = 'status loading';

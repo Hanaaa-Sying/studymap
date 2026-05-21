@@ -11,12 +11,32 @@ from fastapi.responses import FileResponse, HTMLResponse
 
 from fill_mode.framework import generate_framework
 from fill_mode.mubu_export import to_mubu_markdown
-from fill_mode.parser import extract_text_from_pdf
+from fill_mode.parser import (
+    extract_text_from_pdf,
+    extract_first_pages,
+    extract_text_from_docx,
+    extract_first_paras_docx,
+)
 from review_mode.rhetoric import extract_rhetoric_chunked
 from store.schema import RhetoricEntry
 
 app = FastAPI()
 DATA_DIR = Path(os.getenv("STUDYMAP_DATA_DIR", "./data"))
+
+ALLOWED_EXTENSIONS = {".pdf", ".docx"}
+MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+
+
+def _extract_for_fill(tmp_path: str, suffix: str) -> str:
+    if suffix == ".pdf":
+        return extract_first_pages(tmp_path, n=25)
+    return extract_first_paras_docx(tmp_path, n=200)
+
+
+def _extract_full(tmp_path: str, suffix: str) -> str:
+    if suffix == ".pdf":
+        return extract_text_from_pdf(tmp_path)
+    return extract_text_from_docx(tmp_path)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -30,20 +50,24 @@ def generate(
     mode: str = Form(default="fill"),
     pdf: UploadFile = File(...),
 ):
-    if not pdf.filename.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="请上传 PDF 文件")
+    suffix = Path(pdf.filename).suffix.lower()
+    if suffix not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="请上传 PDF 或 Word (.docx) 文件")
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-        shutil.copyfileobj(pdf.file, tmp)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        content = pdf.file.read()
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=413, detail="文件超过 20MB，请压缩后重试")
+        tmp.write(content)
         tmp_path = tmp.name
 
     try:
         course_dir = DATA_DIR / course.replace(" ", "_")
         course_dir.mkdir(parents=True, exist_ok=True)
 
-        # 生成知识框架（两种模式都需要，均只用前25页）
         try:
-            nodes = generate_framework(course_name=course, pdf_path=tmp_path)
+            fill_text = _extract_for_fill(tmp_path, suffix)
+            nodes = generate_framework(course_name=course, material_text=fill_text)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"框架生成失败：{e}")
 
@@ -52,10 +76,9 @@ def generate(
             encoding="utf-8",
         )
 
-        # 复习模式：额外对全文做分块话术提取
         if mode == "review":
             try:
-                full_text = extract_text_from_pdf(tmp_path)
+                full_text = _extract_full(tmp_path, suffix)
                 (course_dir / "source.txt").write_text(full_text, encoding="utf-8")
                 rhetoric_data = extract_rhetoric_chunked(course, full_text)
             except Exception as e:
