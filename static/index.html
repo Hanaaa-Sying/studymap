@@ -223,10 +223,16 @@
           const s = await fetch(`/status/${job_id}`);
           const job = await s.json();
           if (job.status === 'done') {
+            const fileResp = await fetch(`/download/${job_id}`);
+            const blob = await fileResp.blob();
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = `/download/${job_id}`;
+            a.href = url;
             a.download = `${document.getElementById('course').value}_幕布框架.md`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
             status.className = 'status success';
             status.textContent = '✓ 生成成功！文件已自动下载，导入幕布即可使用。';
             break;
