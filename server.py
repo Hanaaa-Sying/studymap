@@ -14,9 +14,7 @@ from fill_mode.framework import generate_framework
 from fill_mode.mubu_export import to_mubu_markdown
 from fill_mode.parser import (
     extract_text_from_pdf,
-    extract_first_pages,
     extract_text_from_docx,
-    extract_first_paras_docx,
 )
 from review_mode.rhetoric import extract_rhetoric_chunked
 from store.schema import RhetoricEntry
@@ -31,12 +29,6 @@ MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
 _jobs: dict[str, dict] = {}
 
 
-def _extract_for_fill(tmp_path: str, suffix: str) -> str:
-    if suffix == ".pdf":
-        return extract_first_pages(tmp_path, n=25)
-    return extract_first_paras_docx(tmp_path, n=200)
-
-
 def _extract_full(tmp_path: str, suffix: str) -> str:
     if suffix == ".pdf":
         return extract_text_from_pdf(tmp_path)
@@ -48,8 +40,10 @@ def _process_job(job_id: str, tmp_path: str, suffix: str, course: str, mode: str
         course_dir = DATA_DIR / course.replace(" ", "_")
         course_dir.mkdir(parents=True, exist_ok=True)
 
-        fill_text = _extract_for_fill(tmp_path, suffix)
-        nodes = generate_framework(course_name=course, material_text=fill_text)
+        if suffix == ".pdf":
+            nodes = generate_framework(course_name=course, pdf_path=tmp_path)
+        else:
+            nodes = generate_framework(course_name=course, docx_path=tmp_path)
 
         (course_dir / "framework.json").write_text(
             json.dumps([asdict(n) for n in nodes], ensure_ascii=False, indent=2),

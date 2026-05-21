@@ -1,3 +1,4 @@
+import re
 import pdfplumber
 
 
@@ -10,6 +11,37 @@ def extract_first_pages(pdf_path: str, n: int = 25) -> str:
     with pdfplumber.open(pdf_path) as pdf:
         pages = pdf.pages[:n]
         return "\n".join(page.extract_text() or "" for page in pages)
+
+
+def detect_toc(pdf_path: str) -> bool:
+    """Return True if the document has a table of contents."""
+    with pdfplumber.open(pdf_path) as pdf:
+        sample = "\n".join(page.extract_text() or "" for page in pdf.pages[:5])
+
+    # keyword match
+    toc_keywords = re.compile(
+        r"(目\s*录|contents|table\s+of\s+contents)", re.IGNORECASE
+    )
+    if toc_keywords.search(sample):
+        return True
+
+    # pattern: lines ending with a page number (e.g. "Chapter 1 .... 3" or "第一章…… 5")
+    toc_line = re.compile(r".{4,}[\s.·…]{2,}\d{1,4}\s*$", re.MULTILINE)
+    matches = toc_line.findall(sample)
+    return len(matches) >= 4
+
+
+def detect_toc_docx(docx_path: str) -> bool:
+    from docx import Document
+    doc = Document(docx_path)
+    sample = "\n".join(p.text for p in doc.paragraphs[:60])
+    toc_keywords = re.compile(
+        r"(目\s*录|contents|table\s+of\s+contents)", re.IGNORECASE
+    )
+    if toc_keywords.search(sample):
+        return True
+    toc_line = re.compile(r".{4,}[\s.·…]{2,}\d{1,4}\s*$", re.MULTILINE)
+    return len(toc_line.findall(sample)) >= 4
 
 
 def extract_text_from_docx(docx_path: str) -> str:
