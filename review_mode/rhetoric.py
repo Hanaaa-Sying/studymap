@@ -1,5 +1,6 @@
 import json
 from ai.client import LLMClient
+from ai.lang_utils import build_lang_instruction
 from fill_mode.parser import chunk_text
 
 RHETORIC_PROMPT = """你是一个社会科学论述题答题专家。
@@ -16,22 +17,41 @@ RHETORIC_PROMPT = """你是一个社会科学论述题答题专家。
 2. 附上适用场景（如"批判某理论时"）
 3. 标注来源（页码/章节，如无则填"教材"）
 4. 优先提取：理论批判套路、概念界定句式、学者观点引用格式
-5. 话术语言与原材料保持一致，不做翻译
+5. {lang_instruction}
 
 只输出 JSON 数组，没有话术则输出 []：
 [{{"text": "...", "context": "...", "source": "..."}}]"""
 
 
-def extract_rhetoric(course_name: str, material_text: str, client: LLMClient = None) -> list[dict]:
+def extract_rhetoric(
+    course_name: str,
+    material_text: str,
+    client: LLMClient = None,
+    lang_mode: str = "original",
+    lang_from: str = "auto",
+    lang_to: str = "zh",
+) -> list[dict]:
     if client is None:
         client = LLMClient()
-    prompt = RHETORIC_PROMPT.format(course_name=course_name, material_text=material_text[:6000])
+    lang_instruction = build_lang_instruction(lang_mode, lang_from, lang_to)
+    prompt = RHETORIC_PROMPT.format(
+        course_name=course_name,
+        material_text=material_text[:6000],
+        lang_instruction=lang_instruction,
+    )
     raw = client.chat(prompt)
     raw = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
     return json.loads(raw)
 
 
-def extract_rhetoric_chunked(course_name: str, text: str, client: LLMClient = None) -> list[dict]:
+def extract_rhetoric_chunked(
+    course_name: str,
+    text: str,
+    client: LLMClient = None,
+    lang_mode: str = "original",
+    lang_from: str = "auto",
+    lang_to: str = "zh",
+) -> list[dict]:
     if client is None:
         client = LLMClient()
     chunks = chunk_text(text, chunk_size=6000, overlap=500)
@@ -39,7 +59,7 @@ def extract_rhetoric_chunked(course_name: str, text: str, client: LLMClient = No
     seen = set()
     for chunk in chunks:
         try:
-            items = extract_rhetoric(course_name, chunk, client)
+            items = extract_rhetoric(course_name, chunk, client, lang_mode, lang_from, lang_to)
             for item in items:
                 key = item.get("text", "")[:30]
                 if key and key not in seen:

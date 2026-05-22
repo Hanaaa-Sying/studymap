@@ -101,9 +101,9 @@ python cli.py review --question "分析全球化对民族国家的冲击"
 
 ## GitHub 同步规范
 
-仓库：`https://github.com/hanaaa-sying/studymap`
+仓库：`https://github.com/Hanaaa-Sying/studymap`
 
-每次功能迭代完成后，在对话结束前执行：
+每次功能迭代完成后，在对话结束前**自动执行**（无需用户提醒）：
 ```bash
 git add -p          # 逐块确认，避免提交 key 或临时文件
 git commit -m "描述本次变更"

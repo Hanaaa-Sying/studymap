@@ -118,12 +118,64 @@
       text-align: center; line-height: 1.6;
     }
     #reviewHint { display: none; }
+
+    /* Guide */
+    .guide { margin-bottom: 28px; border: 1.5px solid #e5e5ea; border-radius: 10px; overflow: hidden; }
+    .guide summary {
+      padding: 10px 14px; font-size: 13px; font-weight: 600;
+      color: #0071e3; cursor: pointer; user-select: none; list-style: none;
+    }
+    .guide summary::-webkit-details-marker { display: none; }
+    .guide summary::after { content: " ▸"; }
+    details[open].guide summary::after { content: " ▾"; }
+    .guide-body {
+      padding: 4px 14px 14px; font-size: 13px; color: #3a3a3c;
+      line-height: 1.6; background: #f9f9fb;
+    }
+    .guide-body > p { margin-bottom: 10px; }
+    .guide-mode { margin-bottom: 8px; }
+    .guide-mode-title { font-weight: 600; margin-bottom: 2px; }
+
+    /* Lang */
+    .lang-group { display: flex; gap: 8px; margin-bottom: 16px; }
+    .lang-option input[type="radio"] { display: none; }
+    .lang-label {
+      display: block; border: 1.5px solid #d2d2d7; border-radius: 8px;
+      padding: 8px 16px; font-size: 13px; cursor: pointer; transition: all 0.18s;
+    }
+    .lang-option input:checked + .lang-label {
+      border-color: #0071e3; background: #f0f7ff; color: #0071e3; font-weight: 600;
+    }
+    .lang-selectors {
+      display: none; align-items: center; gap: 8px; margin-bottom: 20px;
+    }
+    .lang-selectors select {
+      flex: 1; padding: 10px 12px; border: 1.5px solid #d2d2d7;
+      border-radius: 8px; font-size: 14px; outline: none; background: #fff; cursor: pointer;
+    }
+    .lang-selectors select:focus { border-color: #0071e3; }
+    .lang-arrow { color: #6e6e73; font-size: 14px; flex-shrink: 0; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>StudyMap</h1>
     <p class="subtitle">上传课程 PDF，自动生成可导入幕布的知识框架</p>
+
+    <details class="guide">
+      <summary>使用说明</summary>
+      <div class="guide-body">
+        <p>上传任意学习材料（课件、文献、书籍……），AI 提取结构后生成可导入幕布的 Markdown 文件。</p>
+        <div class="guide-mode">
+          <div class="guide-mode-title">📖 填充模式</div>
+          <p>提炼材料的大纲骨架，生成空框架。在后续阅读或学习过程中自主填充内容，逐步把这份材料内化为自己的知识结构。适合<strong>开始阅读前</strong>使用。</p>
+        </div>
+        <div class="guide-mode">
+          <div class="guide-mode-title">🎯 复习模式</div>
+          <p>全文扫描，把核心论点、话术和脉络全面梳理出来。适合<strong>完成阅读或学完一门课后</strong>，需要提纲挈领总结时使用，方便复盘或备考。</p>
+        </div>
+      </div>
+    </details>
 
     <form id="form">
       <label for="course">课程名称</label>
@@ -145,6 +197,46 @@
             <div class="mode-desc">考前提取话术<br>约 2–5 分钟，全文分析</div>
           </label>
         </div>
+      </div>
+
+      <label>输出语言</label>
+      <div class="lang-group">
+        <div class="lang-option">
+          <input type="radio" name="lang_mode" id="langOriginal" value="original" checked>
+          <label class="lang-label" for="langOriginal">保持原文</label>
+        </div>
+        <div class="lang-option">
+          <input type="radio" name="lang_mode" id="langTranslate" value="translate">
+          <label class="lang-label" for="langTranslate">翻译语言</label>
+        </div>
+        <div class="lang-option">
+          <input type="radio" name="lang_mode" id="langBilingual" value="bilingual">
+          <label class="lang-label" for="langBilingual">中英双语</label>
+        </div>
+      </div>
+      <div class="lang-selectors" id="langSelectors">
+        <select name="lang_from" id="langFrom">
+          <option value="auto">自动检测</option>
+          <option value="zh">中文（简体）</option>
+          <option value="zh-tw">中文（繁體）</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="fr">Français</option>
+          <option value="es">Español</option>
+          <option value="de">Deutsch</option>
+        </select>
+        <span class="lang-arrow">→</span>
+        <select name="lang_to" id="langTo">
+          <option value="zh">中文（简体）</option>
+          <option value="zh-tw">中文（繁體）</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="fr">Français</option>
+          <option value="es">Español</option>
+          <option value="de">Deutsch</option>
+        </select>
       </div>
 
       <label>课程 PDF</label>
@@ -181,9 +273,12 @@
     uploadArea.addEventListener('drop', e => {
       e.preventDefault();
       uploadArea.classList.remove('dragover');
-      if (e.dataTransfer.files[0]) {
-        pdfInput.files = e.dataTransfer.files;
-        fileName.textContent = e.dataTransfer.files[0].name;
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        pdfInput.files = dt.files;
+        fileName.textContent = file.name;
       }
     });
 
@@ -192,6 +287,14 @@
         const isReview = document.getElementById('modeReview').checked;
         fillHint.style.display = isReview ? 'none' : 'block';
         reviewHint.style.display = isReview ? 'block' : 'none';
+      });
+    });
+
+    const langSelectors = document.getElementById('langSelectors');
+    document.querySelectorAll('input[name="lang_mode"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        langSelectors.style.display =
+          document.getElementById('langTranslate').checked ? 'flex' : 'none';
       });
     });
 

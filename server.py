@@ -35,15 +35,20 @@ def _extract_full(tmp_path: str, suffix: str) -> str:
     return extract_text_from_docx(tmp_path)
 
 
-def _process_job(job_id: str, tmp_path: str, suffix: str, course: str, mode: str):
+def _process_job(
+    job_id: str, tmp_path: str, suffix: str, course: str, mode: str,
+    lang_mode: str = "original", lang_from: str = "auto", lang_to: str = "zh",
+):
     try:
         course_dir = DATA_DIR / course.replace(" ", "_")
         course_dir.mkdir(parents=True, exist_ok=True)
 
+        lang_kwargs = dict(lang_mode=lang_mode, lang_from=lang_from, lang_to=lang_to)
+
         if suffix == ".pdf":
-            nodes = generate_framework(course_name=course, pdf_path=tmp_path)
+            nodes = generate_framework(course_name=course, pdf_path=tmp_path, **lang_kwargs)
         else:
-            nodes = generate_framework(course_name=course, docx_path=tmp_path)
+            nodes = generate_framework(course_name=course, docx_path=tmp_path, **lang_kwargs)
 
         (course_dir / "framework.json").write_text(
             json.dumps([asdict(n) for n in nodes], ensure_ascii=False, indent=2),
@@ -53,7 +58,7 @@ def _process_job(job_id: str, tmp_path: str, suffix: str, course: str, mode: str
         if mode == "review":
             full_text = _extract_full(tmp_path, suffix)
             (course_dir / "source.txt").write_text(full_text, encoding="utf-8")
-            rhetoric_data = extract_rhetoric_chunked(course, full_text)
+            rhetoric_data = extract_rhetoric_chunked(course, full_text, **lang_kwargs)
             rhetoric = [
                 RhetoricEntry(id=str(uuid.uuid4()), courses=[course], **r)
                 for r in rhetoric_data
@@ -87,6 +92,9 @@ def generate(
     course: str = Form(...),
     mode: str = Form(default="fill"),
     pdf: UploadFile = File(...),
+    lang_mode: str = Form(default="original"),
+    lang_from: str = Form(default="auto"),
+    lang_to: str = Form(default="zh"),
 ):
     suffix = Path(pdf.filename).suffix.lower()
     if suffix not in ALLOWED_EXTENSIONS:
@@ -105,7 +113,7 @@ def generate(
 
     thread = threading.Thread(
         target=_process_job,
-        args=(job_id, tmp_path, suffix, course, mode),
+        args=(job_id, tmp_path, suffix, course, mode, lang_mode, lang_from, lang_to),
         daemon=True,
     )
     thread.start()

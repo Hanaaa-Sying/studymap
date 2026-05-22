@@ -1,5 +1,6 @@
 import json
 from ai.client import LLMClient
+from ai.lang_utils import build_lang_instruction
 from fill_mode.parser import (
     extract_first_pages,
     extract_text_from_pdf,
@@ -25,7 +26,7 @@ FRAMEWORK_PROMPT = """你是一个专业的学术课程知识结构分析师。
 4. 只保留考试相关内容：理论名称、学者姓名、核心命题、重要对比
 5. 删除：章节编号、"引言"/"结论"/"举例"等非考点内容
 6. 节点总数控制在 50-80 个
-7. 节点标题语言与原材料保持一致，不做翻译
+7. {lang_instruction}
 
 输出 JSON schema（只输出 JSON，不要解释）：
 [{{"id": "n1", "title": "...", "parent_id": null, "level": 1}}]"""
@@ -44,7 +45,7 @@ FRAMEWORK_LIGHT_PROMPT = """你是一个专业的学术文献阅读助手。
 3. 每个节点 title 不超过 12 个字，使用名词短语或短动宾结构
 4. 聚焦主要论点、核心概念、关键论据，忽略举例和细节
 5. 节点总数控制在 20-35 个
-6. 节点标题语言与原材料保持一致，不做翻译
+6. {lang_instruction}
 
 输出 JSON schema（只输出 JSON，不要解释）：
 [{{"id": "n1", "title": "...", "parent_id": null, "level": 1}}]"""
@@ -65,32 +66,40 @@ def generate_framework(
     docx_path: str = None,
     material_text: str = None,
     client: LLMClient = None,
+    lang_mode: str = "original",
+    lang_from: str = "auto",
+    lang_to: str = "zh",
 ) -> list[KnowledgeNode]:
     if client is None:
         client = LLMClient()
 
+    lang_instruction = build_lang_instruction(lang_mode, lang_from, lang_to)
+
     if material_text is not None:
-        # 直接传入文本时，不做目录检测，用精细模式
-        prompt = FRAMEWORK_PROMPT.format(course_name=course_name, material_text=material_text[:15000])
+        prompt = FRAMEWORK_PROMPT.format(
+            course_name=course_name,
+            material_text=material_text[:15000],
+            lang_instruction=lang_instruction,
+        )
         return _parse_nodes(client.chat(prompt))
 
     if pdf_path:
         has_toc = detect_toc(pdf_path)
         if has_toc:
             text = extract_first_pages(pdf_path, n=25)
-            prompt = FRAMEWORK_PROMPT.format(course_name=course_name, material_text=text[:15000])
+            prompt = FRAMEWORK_PROMPT.format(course_name=course_name, material_text=text[:15000], lang_instruction=lang_instruction)
         else:
             text = extract_text_from_pdf(pdf_path)
-            prompt = FRAMEWORK_LIGHT_PROMPT.format(course_name=course_name, material_text=text[:20000])
+            prompt = FRAMEWORK_LIGHT_PROMPT.format(course_name=course_name, material_text=text[:20000], lang_instruction=lang_instruction)
 
     elif docx_path:
         has_toc = detect_toc_docx(docx_path)
         if has_toc:
             text = extract_first_paras_docx(docx_path, n=200)
-            prompt = FRAMEWORK_PROMPT.format(course_name=course_name, material_text=text[:15000])
+            prompt = FRAMEWORK_PROMPT.format(course_name=course_name, material_text=text[:15000], lang_instruction=lang_instruction)
         else:
             text = extract_text_from_docx(docx_path)
-            prompt = FRAMEWORK_LIGHT_PROMPT.format(course_name=course_name, material_text=text[:20000])
+            prompt = FRAMEWORK_LIGHT_PROMPT.format(course_name=course_name, material_text=text[:20000], lang_instruction=lang_instruction)
 
     else:
         raise ValueError("pdf_path, docx_path, or material_text required")
