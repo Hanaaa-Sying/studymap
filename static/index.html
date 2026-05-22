@@ -155,6 +155,13 @@
     }
     .lang-selectors select:focus { border-color: #0071e3; }
     .lang-arrow { color: #6e6e73; font-size: 14px; flex-shrink: 0; }
+
+    @media (max-width: 540px) {
+      body { align-items: flex-start; padding: 16px; }
+      .card { padding: 28px 20px; border-radius: 12px; }
+      .lang-label { padding: 7px 10px; font-size: 12px; }
+      .lang-group { flex-wrap: wrap; }
+    }
   </style>
 </head>
 <body>
